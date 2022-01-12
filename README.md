@@ -2,6 +2,7 @@
 Exercises and practice of the GO language for your better understanding
 
 
-# Run file
+# Compile file
 go build file.go
+# Run file
 ./file
