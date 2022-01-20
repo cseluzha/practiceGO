@@ -2,14 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/labstack/echo/v4"
 	"log"
 	"net/http"
 	"reminders/cmd/api/vo"
 	"reminders/internal/repository"
-
-	//"reminders/internal/repository"
-
-	"github.com/labstack/echo/v4"
 )
 
 func NewUser(c echo.Context) error {
@@ -28,14 +25,10 @@ func NewUser(c echo.Context) error {
 		Email:  user.Email,
 	})
 	log.Printf("The new user id is %v", userid)
-	return c.String(http.StatusOK, "We got your User: %v")
+	return c.String(http.StatusOK, "user created successfully")
 }
 
 func UpdateUser(c echo.Context) error {
-	// userId := c.QueryParam("userid")
-	// email := c.QueryParam("email")
-	// dataType := c.Param("data")
-
 	user := vo.User{}
 	err := json.NewDecoder(c.Request().Body).Decode(&user)
 	if err != nil {
@@ -47,16 +40,16 @@ func UpdateUser(c echo.Context) error {
 }
 
 func DeleteUser(c echo.Context) error {
-	userId := c.QueryParam("userid")
+	// userId := c.QueryParam("userid")
 	dataType := c.Param("data")
 
 	if dataType == "json" {
-		user := vo.User{
-			IdUser: userId,
-			Email:  "",
-		}
+		// user := vo.User{
+		// 	IdUser: userId,
+		// 	Email:  "",
+		// }
 		//TODO: Make the delete user into data base.
-		return c.JSON(http.StatusOK, user)
+		return c.JSON(http.StatusOK, "")
 	} else {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": "Please specify the data",
@@ -65,14 +58,13 @@ func DeleteUser(c echo.Context) error {
 }
 
 func GetUsers(c echo.Context) error {
-	dataType := c.Param("data")
-	if dataType == "json" {
-		//users := []vo.User; // Call the data base for get all users
-		user := vo.User{}
-		return c.JSON(http.StatusOK, user)
-	} else {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": "Any Error",
-		})
+	g := repository.NewUserRepository()
+	users, _ := g.ListUsers()
+	usersToJson, err := json.Marshal(users)
+	if err != nil {
+		log.Fatalf("Failed reading the request body %s", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error)
 	}
+	log.Printf("users to json %#v\n", string(usersToJson))
+	return c.JSON(http.StatusOK, string(usersToJson))
 }

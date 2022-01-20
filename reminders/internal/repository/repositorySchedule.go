@@ -3,6 +3,9 @@ package repository
 import (
 	"database/sql"
 	"fmt"
+
+	uuid "github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 const (
@@ -11,9 +14,9 @@ const (
 )
 
 type Schedule struct {
-	Id          string `db:"id"`
-	Description string `db:"description"`
-	Users       string `db:"users"`
+	Id          uuid.UUID   `json:"id" db:"id"`
+	Description string      `json:"description" db:"description"`
+	Users       []uuid.UUID `json:"users" db:"users" pg:"array"`
 }
 
 type scheduleRepository struct {
@@ -24,7 +27,7 @@ type SchedulesRepository interface {
 	NewSchedule(schedule Schedule) string
 	UpdateSchedule(schedule Schedule) int64
 	DeleteSchedule(id string) int64
-	List() ([]Schedule, error)
+	ListSchedules() ([]Schedule, error)
 }
 
 func (ur *scheduleRepository) NewSchedule(schedule Schedule) string {
@@ -36,13 +39,13 @@ func (ur *scheduleRepository) NewSchedule(schedule Schedule) string {
 	var id string
 
 	// Scan function will save the insert id in the id
-	err := ur.db.QueryRow(insertStmt, schedule.Id, schedule.Description, schedule.Users).Scan(&id)
+	err := ur.db.QueryRow(insertStmt, schedule.Id, schedule.Description, pq.Array(schedule.Users)).Scan(&id)
 	CheckError(err)
 	fmt.Printf("Inserted %v in %v\n", id, tableSchedule)
 	return id
 }
 
-func (ur *scheduleRepository) UpdateSchedule(schedule Schedule) int64 {	
+func (ur *scheduleRepository) UpdateSchedule(schedule Schedule) int64 {
 	// close database
 	defer ur.db.Close()
 
@@ -74,14 +77,14 @@ func (ur *scheduleRepository) DeleteSchedule(id string) int64 {
 	return rowsAffected
 }
 
-func (ur *scheduleRepository) List() ([]Schedule, error) {
+func (ur *scheduleRepository) ListSchedules() ([]Schedule, error) {
 	// close database
 	defer ur.db.Close()
 
 	var schedules []Schedule
 
 	// create the select sql query
-	sqlStatement := `SELECT * FROM ` + schemaSchedule + `.` + tableSchedule 
+	sqlStatement := `SELECT * FROM ` + schemaSchedule + `.` + tableSchedule
 	// execute the sql statement
 	rows, err := ur.db.Query(sqlStatement)
 	CheckError(err)
@@ -103,7 +106,6 @@ func (ur *scheduleRepository) List() ([]Schedule, error) {
 	// return empty schedules on error
 	return schedules, err
 }
-
 
 func NewScheduleRepository() SchedulesRepository {
 	return &scheduleRepository{db: CreateConnection()}

@@ -3,18 +3,18 @@ package repository
 import (
 	"database/sql"
 	"fmt"
-
+	uuid "github.com/google/uuid"
 	_ "github.com/lib/pq"
 )
 
-const (	
+const (
 	schemaUser = "users"
 	tableUser  = "users"
 )
 
 type User struct {
-	IdUser string `db:"user_id"`
-	Email  string `db:"email"`
+	IdUser uuid.UUID `json:"user_id" db:"user_id"`
+	Email  string    `json:"email" db:"email"`
 }
 
 type userRepository struct {
@@ -101,7 +101,6 @@ func (ur *userRepository) ListUsers() ([]User, error) {
 		err = rows.Scan(&user.IdUser, &user.Email)
 
 		CheckError(err)
-
 		// append the user in the users slice
 		users = append(users, user)
 	}

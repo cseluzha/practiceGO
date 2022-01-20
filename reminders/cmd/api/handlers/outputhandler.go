@@ -22,19 +22,19 @@ func NewOutput(c echo.Context) error {
 }
 
 func UpdateOutput(c echo.Context) error {
-	id := c.QueryParam("id")
-	description := c.QueryParam("description")
-	emails := c.QueryParam("emails")
+	// id := c.QueryParam("id")
+	// description := c.QueryParam("description")
+	// emails := c.QueryParam("emails")
 	dataType := c.Param("data")
 
 	if dataType == "json" {
-		output := vo.Output{
-			Id:          id,
-			Description: description,
-			Emails:       emails,
-		}
+		// output := vo.Output{
+		// 	Id:          id,
+		// 	Description: description,
+		// 	Emails:       emails,
+		// }
 		//TODO: Make the update output into data base.
-		return c.JSON(http.StatusOK, output)
+		return c.JSON(http.StatusOK, "")
 	} else {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": "Please specify the data for the update user",
@@ -43,17 +43,17 @@ func UpdateOutput(c echo.Context) error {
 }
 
 func DeleteOutput(c echo.Context) error {
-	id := c.QueryParam("id")
+	//id := c.QueryParam("id")
 	dataType := c.Param("data")
 
 	if dataType == "json" {
-		output := vo.Output{
-			Id:          id,
-			Description: "",
-			Emails:       "",
-		}
+		// output := vo.Output{
+		// 	Id:          id,
+		// 	Description: "",
+		// 	Emails:       "",
+		// }
 		//TODO: Make the delete output into data base.
-		return c.JSON(http.StatusOK, output)
+		return c.JSON(http.StatusOK, "")
 	} else {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": "Please specify the data",

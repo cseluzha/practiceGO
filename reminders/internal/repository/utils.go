@@ -10,7 +10,7 @@ func CheckError(err error) {
 	}
 }
 
-func GenerateUUID() string {
+func GenerateUUID() uuid.UUID {
 	uuidNew := uuid.New()
-	return uuidNew.String()
+	return uuidNew
 }

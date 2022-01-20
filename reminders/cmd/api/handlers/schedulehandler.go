@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/labstack/echo/v4"
 	"log"
 	"net/http"
 	"reminders/cmd/api/vo"
+	"reminders/internal/repository"
+
+	"github.com/labstack/echo/v4"
 )
 
 func NewSchedule(c echo.Context) error {
@@ -17,24 +19,30 @@ func NewSchedule(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error)
 	}
 	log.Printf("this is your schedule %#v", schedule)
-	//TODO: Make create the new schedule into data base.
-	return c.String(http.StatusOK, "We got your Schedule!!!")
+	s := repository.NewScheduleRepository()
+	scheduleId := s.NewSchedule(repository.Schedule{
+		Id:          repository.GenerateUUID(),
+		Description: schedule.Description,
+		Users:       schedule.Users,
+	})
+	log.Printf("The new schedule id is %v", scheduleId)
+	return c.String(http.StatusOK, "schedule created successfully!")
 }
 
 func UpdateSchedule(c echo.Context) error {
-	id := c.QueryParam("id")
-	description := c.QueryParam("description")
-	users := c.QueryParam("users")
+	// id := c.QueryParam("id")
+	// description := c.QueryParam("description")
+	// users := c.QueryParam("users")
 	dataType := c.Param("data")
 
 	if dataType == "json" {
-		schedule := vo.Schedule{
-			Id:          id,
-			Description: description,
-			Users:       users,
-		}
+		// schedule := vo.Schedule{
+		// 	Id:          id,
+		// 	Description: description,
+		// 	Users:       users,
+		// }
 		//TODO: Make the update schedule into data base.
-		return c.JSON(http.StatusOK, schedule)
+		return c.JSON(http.StatusOK, "")
 	} else {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": "Please specify the data for the update user",
@@ -43,17 +51,17 @@ func UpdateSchedule(c echo.Context) error {
 }
 
 func DeleteSchedule(c echo.Context) error {
-	id := c.QueryParam("id")
+	//id := c.QueryParam("id")
 	dataType := c.Param("data")
 
 	if dataType == "json" {
-		schedule := vo.Schedule{
-			Id:          id,
-			Description: "",
-			Users:       "",
-		}
+		// schedule := vo.Schedule{
+		// 	Id:          id,
+		// 	Description: "",
+		// 	Users:       "",
+		// }
 		//TODO: Make the delete schedule into data base.
-		return c.JSON(http.StatusOK, schedule)
+		return c.JSON(http.StatusOK, "")
 	} else {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": "Please specify the data",

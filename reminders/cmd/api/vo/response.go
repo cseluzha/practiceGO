@@ -1,18 +1,22 @@
 package vo
 
+import (
+	uuid "github.com/google/uuid"
+)
+
 type User struct {
-	IdUser string `json:"userid"`
-	Email  string `json:"email"`
+	IdUser uuid.UUID `json:"userid"`
+	Email  string    `json:"email"`
 }
 
 type Schedule struct {
-	Id          string `json:"id"`
-	Description string `json:"description"`
-	Users       string `json:"users"`
+	Id          uuid.UUID   `json:"id"`
+	Description string      `json:"description"`
+	Users       []uuid.UUID `json:"users" pg:"array"`
 }
 
 type Output struct {
-	Id          string `json:"id"`
-	Description string `json:"description"`
-	Emails      string `json:"emails"`
+	Id          uuid.UUID `json:"id"`
+	Description string    `json:"description"`
+	Emails      []string  `json:"emails" pg:"array"`
 }
