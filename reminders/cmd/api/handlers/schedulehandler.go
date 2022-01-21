@@ -2,12 +2,14 @@ package handlers
 
 import (
 	"encoding/json"
-	uuid "github.com/google/uuid"
-	"github.com/labstack/echo/v4"
 	"log"
 	"net/http"
 	"reminders/cmd/api/vo"
+	"reminders/cmd/cron"
 	"reminders/internal/repository"
+
+	uuid "github.com/google/uuid"
+	"github.com/labstack/echo/v4"
 )
 
 func NewSchedule(c echo.Context) error {
@@ -18,8 +20,12 @@ func NewSchedule(c echo.Context) error {
 		log.Fatalf("Failed reading the request body %s", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error)
 	}
+	ur := repository.NewUserRepository()
 	res := checkUsers(schedule.Users)
+	//res := ur.ExistUsers(schedule.Users)
 	if res {
+		emails := ur.GetEmails(schedule.Users)
+		cron.WriteToOutput(emails)
 		s := repository.NewScheduleRepository()
 		scheduleId := s.NewSchedule(repository.Schedule{
 			Id:          repository.GenerateUUID(),
@@ -28,6 +34,7 @@ func NewSchedule(c echo.Context) error {
 		})
 		log.Printf("The new schedule id is %v", scheduleId)
 		//TODO: validate if it was created correctly
+		//Write the channel
 		return c.String(http.StatusOK, "Schedule created successfully!")
 	} else {
 		return c.JSON(http.StatusBadRequest, map[string]string{
@@ -79,7 +86,6 @@ func DeleteSchedule(c echo.Context) error {
 func GetSchedules(c echo.Context) error {
 	dataType := c.Param("data")
 	if dataType == "json" {
-		//schedule := []vo.Schedule; // Call the data base for get all users
 		schedule := vo.Schedule{}
 		return c.JSON(http.StatusOK, schedule)
 	} else {
@@ -89,6 +95,7 @@ func GetSchedules(c echo.Context) error {
 	}
 }
 
+//TODO: move this logic in other layer
 func checkUsers(users []uuid.UUID) bool {
 	ur := repository.NewUserRepository()
 	usersDb, _ := ur.ListUsers()
@@ -102,7 +109,7 @@ func checkUsers(users []uuid.UUID) bool {
 	return result
 }
 
-//TODO: Investigate if exit other form better 
+//TODO: Investigate if exit other better form
 func contains(s []repository.User, str uuid.UUID) bool {
 	var r bool = false
 	for _, v := range s {

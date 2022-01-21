@@ -16,7 +16,7 @@ type Schedule struct {
 }
 
 type Output struct {
-	Id          uuid.UUID `json:"id"`
-	Description string    `json:"description"`
-	Emails      []string  `json:"emails" pg:"array"`
+	Id          uuid.UUID   `json:"id"`
+	Description string      `json:"description"`
+	Emails      []uuid.UUID `json:"emails" pg:"array"`
 }

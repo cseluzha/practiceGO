@@ -3,17 +3,20 @@ package repository
 import (
 	"database/sql"
 	"fmt"
+
+	uuid "github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 const (
-	dbnameOutput = "outputs"
+	schemaOutput = "outputs"
 	tableOutput  = "output"
 )
 
 type Output struct {
-	Id          string   `db:"id"`
-	Description string   `db:"description"`
-	Emails      []string `db:"emails"`
+	Id          uuid.UUID   `json:"id" db:"id" sql:",type:uuid"`
+	Description string      `json:"description" db:"description"`
+	Emails      []uuid.UUID `json:"emails" db:"emails" pg:"array"`
 }
 
 type outputRepository struct {
@@ -29,21 +32,21 @@ type OutputsRepository interface {
 
 func (ur *outputRepository) NewOutput(output Output) string {
 	//TODO: validate the new output not exist into data base.
-	
+
 	// close database
 	defer ur.db.Close()
 
-	insertStmt := `INSERT INTO $1 (id, description,emails) VALUES ($2, $3, $4) RETURNING id`
+	insertStmt := `INSERT INTO ` + schemaOutput + `.` + tableOutput + ` (id, description,emails) VALUES ($2, $3, $4) RETURNING id`
 	var id string
 
 	// Scan function will save the insert id in the id
-	err := ur.db.QueryRow(insertStmt, tableOutput, output.Id, output.Description, output.Emails).Scan(&id)
+	err := ur.db.QueryRow(insertStmt, tableOutput, output.Id, output.Description, pq.Array(output.Emails)).Scan(&id)
 	CheckError(err)
 	fmt.Printf("Inserted %v  in %v\n", id, tableOutput)
 	return id
 }
 
-func (ur *outputRepository) UpdateOutput(output Output) int64 {	
+func (ur *outputRepository) UpdateOutput(output Output) int64 {
 	// close database
 	defer ur.db.Close()
 
@@ -59,7 +62,7 @@ func (ur *outputRepository) UpdateOutput(output Output) int64 {
 	return rowsAffected
 }
 
-func (ur *outputRepository) DeleteOutput(id string) int64 {	
+func (ur *outputRepository) DeleteOutput(id string) int64 {
 	// close database
 	defer ur.db.Close()
 
@@ -75,7 +78,7 @@ func (ur *outputRepository) DeleteOutput(id string) int64 {
 	return rowsAffected
 }
 
-func (ur *outputRepository) ListOutputs() ([]Output, error) {	
+func (ur *outputRepository) ListOutputs() ([]Output, error) {
 	// close database
 	defer ur.db.Close()
 

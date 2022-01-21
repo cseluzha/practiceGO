@@ -3,7 +3,9 @@ package repository
 import (
 	"database/sql"
 	"fmt"
+
 	uuid "github.com/google/uuid"
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 )
 
@@ -13,7 +15,7 @@ const (
 )
 
 type User struct {
-	IdUser uuid.UUID `json:"user_id" db:"user_id"`
+	IdUser uuid.UUID `json:"user_id" db:"user_id" sql:",type:uuid"`
 	Email  string    `json:"email" db:"email"`
 }
 
@@ -26,6 +28,8 @@ type UsersRepository interface {
 	UpdateUser(user User) int64
 	DeleteUser(userId string) int64
 	ListUsers() ([]User, error)
+	ExistUsers(userIds []uuid.UUID) bool
+	GetEmails(userIds []uuid.UUID) []uuid.UUID
 }
 
 func (ur *userRepository) NewUser(user User) string {
@@ -106,6 +110,46 @@ func (ur *userRepository) ListUsers() ([]User, error) {
 	}
 	// return empty users on error
 	return users, err
+}
+
+func (ur *userRepository) ExistUsers(userIds []uuid.UUID) bool {
+	var result bool = false
+	// close database
+	defer ur.db.Close()
+	queryStmt := `SELECT EXISTS(SELECT 1 FROM ` + schemaUser + `.` + tableUser + ` WHERE user_id::text in ($1) HAVING COUNT (user_id) > $2);`	
+	res, err := ur.db.Query(queryStmt, pq.Array(userIds), len(userIds))
+	CheckError(err)
+	res.Scan(&result)
+	return result
+}
+
+func (ur *userRepository) GetEmails(userIds []uuid.UUID) []uuid.UUID {
+	// close database
+	defer ur.db.Close()
+
+	var emails []uuid.UUID
+	// create the select sql query
+	sqlStatement := `SELECT email FROM ` + schemaUser + `.` + tableUser + ` WHERE  user_id::text in ($1)`
+	fmt.Printf("sqlStatement %v \n", sqlStatement)
+	// execute the sql statement	
+	rows, err := ur.db.Query(sqlStatement, pq.Array(userIds))
+	CheckError(err)
+	// close the statement
+	defer rows.Close()
+
+	// iterate over the rows
+	for rows.Next() {
+		var email uuid.UUID
+
+		// unmarshal the row object to user
+		err = rows.Scan(&email)
+
+		CheckError(err)
+		// append the user in the users slice
+		emails = append(emails, email)
+	}
+	// return empty emails on error
+	return emails
 }
 
 func NewUserRepository() UsersRepository {

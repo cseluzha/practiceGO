@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/labstack/echo/v4"
 	"log"
 	"net/http"
 	"reminders/cmd/api/vo"
+	"reminders/internal/repository"
+
+	"github.com/labstack/echo/v4"
 )
 
 func NewOutput(c echo.Context) error {
@@ -18,7 +20,15 @@ func NewOutput(c echo.Context) error {
 	}
 	log.Printf("this is your output %#v", output)
 	//TODO: Make create the new output into data base.
-	return c.String(http.StatusOK, "We got your output!!!")
+	or := repository.NewOutputRepository()
+	outId := or.NewOutput(
+		repository.Output{
+			Id:          repository.GenerateUUID(),
+			Description: output.Description,
+			Emails:      output.Emails,
+		})
+	log.Printf("The new output id is %v", outId)
+	return c.String(http.StatusOK, "output created successfully!")
 }
 
 func UpdateOutput(c echo.Context) error {
