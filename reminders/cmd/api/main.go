@@ -1,10 +1,8 @@
 package main
 
 import (
-	"reminders/cmd/api/handlers"
-	"reminders/cmd/cron"
-
 	"github.com/labstack/echo/v4"
+	"reminders/cmd/api/handlers"
 )
 
 func main() {
@@ -24,5 +22,4 @@ func main() {
 	// e.GET("/outputs", handlers.GetSchedules)
 	// e.POST("/outputs", handlers.NewSchedule)
 	e.Logger.Fatal(e.Start(":3000"))
-	cron.ListenChannel()
 }

@@ -27,7 +27,6 @@ func sendToOutput(emails []uuid.UUID) {
 
 func ListenChannel() {
 	channelSchedule := make(chan []uuid.UUID)
-	go WriteToOutput([]uuid.UUID{})
 loop:
 	for {
 		select {

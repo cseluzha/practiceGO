@@ -25,7 +25,7 @@ func NewSchedule(c echo.Context) error {
 	//res := ur.ExistUsers(schedule.Users)
 	if res {
 		emails := ur.GetEmails(schedule.Users)
-		cron.WriteToOutput(emails)
+		go cron.WriteToOutput(emails)
 		s := repository.NewScheduleRepository()
 		scheduleId := s.NewSchedule(repository.Schedule{
 			Id:          repository.GenerateUUID(),
